@@ -45,8 +45,13 @@ jobs:
               ('"/reservieren', f'"{prefix}/reservieren.html'),
               ('"/speisekarte', f'"{prefix}/speisekarte.html'),
               ('"/trattoria', f'"{prefix}/trattoria.html'),
+              ("'/rechtliches", f"'{prefix}/rechtliches.html"),
+              ("'/reservieren", f"'{prefix}/reservieren.html"),
+              ("'/speisekarte", f"'{prefix}/speisekarte.html"),
+              ("'/trattoria", f"'{prefix}/trattoria.html"),
               ('href="/"', f'href="{prefix}/"'),
               ('["home","/",', f'["home","{prefix}/",'),
+              ("['home','/',", f"['home','{prefix}/',"),
           )
 
           for path in list(dist.glob("*.html")) + [dist / "app.js"]:

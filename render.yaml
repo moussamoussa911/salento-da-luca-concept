@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: salento-da-luca-concept
+    runtime: static
+    plan: free
+    buildCommand: echo "Static concept ready"
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /speisekarte
+        destination: /speisekarte.html
+      - type: rewrite
+        source: /reservieren
+        destination: /reservieren.html
+      - type: rewrite
+        source: /trattoria
+        destination: /trattoria.html
+      - type: rewrite
+        source: /rechtliches
+        destination: /rechtliches.html
+    headers:
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex, nofollow

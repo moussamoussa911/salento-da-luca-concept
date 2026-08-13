@@ -1,0 +1,72 @@
+name: Publish concept preview
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build GitHub Pages preview
+        shell: python
+        run: |
+          from pathlib import Path
+          import shutil
+
+          root = Path.cwd()
+          dist = root / "dist"
+          dist.mkdir(exist_ok=True)
+
+          for pattern in ("*.html", "*.js", "*.css", "*.txt"):
+              for source in root.glob(pattern):
+                  shutil.copy2(source, dist / source.name)
+          shutil.copytree(root / "assets", dist / "assets", dirs_exist_ok=True)
+          (dist / ".nojekyll").touch()
+
+          prefix = "/salento-da-luca-concept"
+          replacements = (
+              ('"/assets/', f'"{prefix}/assets/'),
+              ('"/styles.css', f'"{prefix}/styles.css'),
+              ('"/mobile-fix.css', f'"{prefix}/mobile-fix.css'),
+              ('"/app.js', f'"{prefix}/app.js'),
+              ('"/rechtliches', f'"{prefix}/rechtliches.html'),
+              ('"/reservieren', f'"{prefix}/reservieren.html'),
+              ('"/speisekarte', f'"{prefix}/speisekarte.html'),
+              ('"/trattoria', f'"{prefix}/trattoria.html'),
+              ('href="/"', f'href="{prefix}/"'),
+              ('["home","/",', f'["home","{prefix}/",'),
+          )
+
+          for path in list(dist.glob("*.html")) + [dist / "app.js"]:
+              content = path.read_text(encoding="utf-8")
+              for old, new in replacements:
+                  content = content.replace(old, new)
+              path.write_text(content, encoding="utf-8")
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
